@@ -5,23 +5,6 @@ const Hapi = require('hapi');
 // Create a server with a host and port
 const server = new Hapi.Server();
 
-const knex = require('knex')({
-  client: 'mysql',
-  connection: {
-    host     : '127.0.0.1',
-    user     : 'root',
-    password : '',
-    database : 'yostik',
-    charset  : 'utf8'
-  }
-});
-
-const bookshelf = require('bookshelf')(knex);
-
-var Platform = bookshelf.Model.extend({
-  tableName: 'platforms'
-});
-
 server.connection({
     host: 'localhost',
     port: 8000
@@ -30,12 +13,9 @@ server.connection({
 // Add the route
 server.route({
     method: 'GET',
-    path:'/platforms',
+    path:'/search/{q}',
     handler: function (request, reply) {
-      Platform.fetchAll()
-        .then((platforms) => {
-          return reply(platforms.toJSON());
-        });
+      console.log('search');
     }
 });
 
