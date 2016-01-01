@@ -283,3 +283,8 @@ const STORES_MAP = [
     "ar-ae": "الإمارات العربية المتحدة - العربية"
   }
 ];
+
+module.exports = {
+  STORES: STORES,
+  STORES_MAP: STORES_MAP
+};
