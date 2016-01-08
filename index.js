@@ -46,7 +46,7 @@ function getResultsFromLinks(links) {
 
 server.route({
   method: 'GET',
-  path: '/deals',
+  path: '/api/v1/deals',
   handler: function(request, reply) {
     r(DEALS_URL + '?size=' + DEALS_RESULT_SIZE, function(err, response, body) {
       var results = JSON.parse(body);
@@ -71,7 +71,7 @@ server.route({
 
 server.route({
     method: 'GET',
-    path: '/search/{q}',
+    path: '/api/v1/search/{q}',
     handler: function (request, reply) {
       var query = request.params.q;
 
@@ -98,7 +98,7 @@ server.route({
 
 server.route({
   method: 'GET',
-  path: '/compare/{q}/{cid}',
+  path: '/api/v1/compare/{q}/{cid}',
   handler: function(request, reply) {
     var query = request.params.q;
     var cid = request.params.cid;
