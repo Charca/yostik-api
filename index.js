@@ -49,6 +49,16 @@ server.route({
   }
 });
 
+server.route({
+  method: 'GET',
+  path: '/api/v1/subscribe',
+  handler: function(request, reply) {
+    reply({
+      hello: 'world'
+    });
+  }
+});
+
 server.start((err) => {
   if (err) {
       throw err;
