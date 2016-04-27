@@ -54,7 +54,7 @@ server.route({
   path: '/api/v1/subscribe',
   handler: function(request, reply) {
     reply({
-      hello: 'world'
+      hello: 'world!!!'
     });
   }
 });
