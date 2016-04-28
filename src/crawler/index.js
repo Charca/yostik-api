@@ -1,43 +1,57 @@
 'use strict';
 
-const request = require('request-promise');
-const PlayStationStoreTransformer = require('../transformers/PlayStationStoreTransformer');
-const Deal = require('../models/Deal');
-const Game = require('../models/Game');
-const Platform = require('../models/Platform');
+const clc = require('cli-color');
+const knex = require('../config/bookshelf').knex;
+const moment = require('moment');
 
-// TODO: GET THIS FROM A DB
-const STORE_ID = 1;
-const STORE_API_URL = 'https://store.playstation.com/chihiro-api/viewfinder/US/en/999/STORE-MSF77008-ALLGAMES?size=500&start=0';
+class Crawler {
+  constructor(options) {
+    this.storeId = options.storeId;
+    this.requestMethod = options.requestMethod;
+    this.start = options.start || 0;
+  }
 
-// Process:
-// 1) FETCH
-// 2) TRANSFORM
-// 3) SAVE IN DB
+  crawl() {
+    process.stdout.write(clc.blue(`STARTING CRAWLER FOR STORE_ID ${this.storeId}\n\n`));
+    this.crawlStart = Date.now();
+    return this._cleanTempTable()
+      .then(this._requestDataAndSaveInTempTable.bind(this))
+      .then(this._moveNewDataToLiveDatabase.bind(this))
+      .then(this._moveOldDataToHistoryDatabase.bind(this))
+      .then(this._exitProcess.bind(this));
+  }
 
-// 1) FETCH
+  _cleanTempTable() {
+    process.stdout.write(clc.blue(`CLEANING TEMP DATABASE...\n`));
+    return knex.raw('truncate table deals_temp');
+  }
 
-request({ uri: STORE_API_URL, json: true })
-  .then(function(json) {
-    let transformer = new PlayStationStoreTransformer(json);
-    transformer.transform().then(() => {
-      let deals = transformer.getDeals();
-      deals.forEach((deal) => {
-        new Deal(deal).save().then((d) => {
-          console.log('New Deal!', d.get('title'));
-        })
+  _requestDataAndSaveInTempTable() {
+    process.stdout.write(clc.blue(`BEGIN CRAWLING AND SAVING INTO TEMP DATABASE...\n`));
+    return this.requestMethod(this.start);
+  }
+
+  _moveNewDataToLiveDatabase() {
+    process.stdout.write(clc.blue(`MOVING NEW DATA TO LIVE DATABASE...\n`));
+    return knex.raw(`update deals set active = 0 where store_id = '${this.storeId}'`)
+      .then(() => {
+        return knex.raw(`insert into deals select * from deals_temp where store_id = '${this.storeId}'`)
       });
-      console.log('Done');
-    });
-  });
+  }
 
-// var fallout4 = new Game({
-//   name: 'Fallout 4'
-// });
-//
-// fallout4.save()
-//   .then(function(model) {
-//     return model.platforms().attach(1);
-//   }).then(function(model) {
-//     console.log(JSON.stringify(model));
-//   });
+  _moveOldDataToHistoryDatabase() {
+    process.stdout.write(clc.blue(`MOVING OLD DATA TO HISTORY DATABASE...\n`));
+    return knex.raw(`insert into deals_history select * from deals where store_id = '${this.storeId}' and active = 0`)
+      .then(() => {
+        return knex.raw(`delete from deals where store_id = '${this.storeId}' and active = 0`)
+      });
+  }
+
+  _exitProcess() {
+    const timeElapsed = moment(this.crawlStart).fromNow(true);
+    process.stdout.write(clc.green(`DONE! IF YOU DON'T SEE A SEA OF RED, IT ALL WENT WELL. AND IT WAS ALL DONE IN: ${timeElapsed.toUpperCase()}`));
+    process.exit();
+  }
+}
+
+module.exports = Crawler;

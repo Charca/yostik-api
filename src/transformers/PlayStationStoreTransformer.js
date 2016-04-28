@@ -3,7 +3,6 @@
 const Promise = require('bluebird');
 const BaseTransformer = require('./BaseTransformer');
 const moment = require('moment');
-const _ = require('lodash');
 
 class PlayStationStoreTransformer extends BaseTransformer {
   transform(json) {
@@ -16,7 +15,6 @@ class PlayStationStoreTransformer extends BaseTransformer {
     }
 
     let links = this.json.links;
-    let promises = [];
 
     if(links && links.length) {
       this.deals = [];
@@ -88,23 +86,9 @@ class PlayStationStoreTransformer extends BaseTransformer {
 
         this.deals.push(deal);
       }); // End forEach
-
-      for(var key in this.gamesMap) {
-        let promise = this.fetchOrCreateGame(this.gamesMap[key]).then((game) => {
-          let deals = _.filter(this.deals, {
-            'tmp_game_normalized_name': game.get('normalized_name')
-          });
-
-          deals.forEach((deal) => {
-            deal.game_id = game.get('id');
-            delete deal.tmp_game_normalized_name;
-          });
-        });
-
-        promises.push(promise);
-      }
     }
 
+    const promises = this.processGamesMap(this.gamesMap);
     return Promise.all(promises).then(() => this.normalizeDeals());
   }
 

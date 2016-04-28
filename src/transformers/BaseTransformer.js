@@ -1,5 +1,6 @@
 'use strict';
 
+const _ = require('lodash');
 const Game = require('../models/Game');
 
 class BaseTransformer {
@@ -27,6 +28,25 @@ class BaseTransformer {
 
         return this;
       });
+  }
+
+  processGamesMap(map) {
+    let promises = [];
+    for(var key in map) {
+      let promise = this.fetchOrCreateGame(map[key]).then((game) => {
+        let deals = _.filter(this.deals, {
+          'tmp_game_normalized_name': game.get('normalized_name')
+        });
+
+        deals.forEach((deal) => {
+          deal.game_id = game.get('id');
+          delete deal.tmp_game_normalized_name;
+        });
+      });
+
+      promises.push(promise);
+    }
+    return promises;
   }
 
   normalizeDeals() {
