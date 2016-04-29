@@ -27,6 +27,7 @@ server.route({
       if (limit) {
         qb.limit(limit);
       }
+      qb.orderByRaw('deal_price is null, deal_price desc');
     })
       .fetchAll()
       .then((deals) => {
