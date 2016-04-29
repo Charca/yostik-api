@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/Charca/yostik-api#readme",
   "dependencies": {
+    "apac": "^2.0.0",
     "bluebird": "^3.1.4",
     "bookshelf": "^0.9.1",
     "cli-color": "^1.1.0",
