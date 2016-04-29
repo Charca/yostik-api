@@ -29,4 +29,4 @@ node_modules
 .DS_Store
 
 src/config/db.config.js
-src/confg/amazon.config.js
+src/config/amazon.config.js
