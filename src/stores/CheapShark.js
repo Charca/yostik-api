@@ -10,12 +10,30 @@ const DealTemp = Deal.extend({
   tableName: 'deals_temp'
 });
 
-const PAGE_SIZE = 60; // CheapShark limit
+const storeMap = {
+  'steam': {
+    STORE_ID: 2,
+    CS_STORE_ID: 1,
+    TOTAL_PAGES: 128 // As of 2016-04-28, that's the last page
+  },
+  'wingamestore': {
+    STORE_ID: 6,
+    CS_STORE_ID: 20,
+    TOTAL_PAGES: 28
+  }
+};
 
-// TODO: Put in variables
-const STORE_ID = 2;
-const CS_STORE_ID = 1;
-const TOTAL_PAGES = 128; // As of 2016-04-28, that's the last page
+const store = process.argv[2];
+if (!store || !storeMap.hasOwnProperty(store)) {
+  process.stdout.write(clc.red(`Wrong or missing store name: ${store}\n`));
+  process.stdout.write(clc.white(`Valid store names are: ${Object.keys(storeMap).join(' ')}\n`));
+  process.exit(1);
+}
+
+const PAGE_SIZE = 60; // CheapShark limit
+const STORE_ID = storeMap[store].STORE_ID;
+const CS_STORE_ID = storeMap[store].CS_STORE_ID;
+const TOTAL_PAGES = storeMap[store].TOTAL_PAGES;
 const STORE_API_URL = page => `http://www.cheapshark.com/api/1.0/deals?storeID=${CS_STORE_ID}&pageSize=${PAGE_SIZE}&pageNumber=${page}`;
 
 
