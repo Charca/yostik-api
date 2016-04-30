@@ -5,6 +5,7 @@ const Joi = require('joi');
 const Game = require('./src/models/Game');
 const Deal = require('./src/models/Deal');
 const Message = require('./src/models/Message');
+const WatchlistItem = require('./src/models/WatchlistItem');
 
 const server = new Hapi.Server();
 server.connection({
@@ -86,7 +87,73 @@ server.route({
       })
     }
   }
-})
+});
+
+server.route({
+  method: 'POST',
+  path: '/api/v1/watchlist',
+  handler: function(request, reply) {
+    const data = {
+      messenger_platform_id: request.payload.messenger_platform_id,
+      external_user_id: request.payload.external_user_id,
+      game_id: request.payload.game_id,
+      platform_id: request.payload.platform_id
+    };
+
+    const item = new WatchlistItem(data).fetch();
+    item.then((existingItem) => {
+      if (!existingItem) {
+        data.low_price = request.payload.low_price;
+        data.active = 1;
+        // insert
+        return new WatchlistItem(data).save()
+          .then((newItem) => {
+            return new Game().fetch({id: newItem.game_id}).then((game) => {
+              const response = newItem.toJSON();
+              response.game_name = game.get('name');
+              reply({
+                success: true,
+                action: 'watchlist_item_added',
+                item: response
+              });
+            });
+          })
+          .catch((err) => {
+            console.error(err);
+            reply(err);
+          });
+      }
+      // update
+      existingItem.set({ low_price: request.payload.low_price, active: 1 }).save()
+        .then((newItem) => {
+          return new Game().fetch({id: newItem.game_id}).then((game) => {
+            const response = newItem.toJSON();
+            response.game_name = game.get('name');
+            reply({
+              success: true,
+              action: 'watchlist_item_updated',
+              item: response
+            });
+          });
+        })
+        .catch((err) => {
+          console.error(err);
+          reply(err);
+        });
+    });
+  },
+  config: {
+    validate: {
+      payload: Joi.object({
+        messenger_platform_id: Joi.number().required(),
+        external_user_id: Joi.number().required(),
+        game_id: Joi.number().required(),
+        platform_id: Joi.number().required(),
+        low_price: Joi.string().required()
+      })
+    }
+  }
+});
 
 server.route({
   method: 'GET',
