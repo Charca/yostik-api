@@ -108,7 +108,7 @@ server.route({
         // insert
         return new WatchlistItem(data).save()
           .then((newItem) => {
-            return new Game().fetch({id: newItem.get('game_id')}).then((game) => {
+            return new Game({id: newItem.get('game_id')}).fetch().then((game) => {
               const response = newItem.toJSON();
               response.game_name = game.get('name');
               reply({
@@ -126,7 +126,7 @@ server.route({
       // update
       existingItem.set({ low_price: request.payload.low_price, active: 1 }).save()
         .then((newItem) => {
-          return new Game().fetch({id: newItem.get('game_id')}).then((game) => {
+          return new Game({id: newItem.get('game_id')}).fetch().then((game) => {
             const response = newItem.toJSON();
             response.game_name = game.get('name');
             reply({
