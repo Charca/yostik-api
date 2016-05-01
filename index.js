@@ -156,6 +156,33 @@ server.route({
 });
 
 server.route({
+  method: 'DELETE',
+  path: '/api/v1/watchlist',
+  handler: function(request, reply) {
+    return new WatchlistItem({ id: request.payload.id }).save({
+      active: 0
+    }).then((item) => {
+      reply({
+        success: true,
+        action: 'watchlist_item_removed',
+        item: item.toJSON()
+      });
+    })
+    .catch((err) => {
+      console.error(err);
+      reply(err);
+    });
+  },
+  config: {
+    validate: {
+      payload: Joi.object({
+        id: Joi.number().required()
+      })
+    }
+  }
+});
+
+server.route({
   method: 'GET',
   path: '/api/v1/subscribe',
   handler: function(request, reply) {
