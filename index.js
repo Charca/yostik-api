@@ -156,8 +156,8 @@ server.route({
 });
 
 server.route({
-  method: 'DELETE',
-  path: '/api/v1/watchlist',
+  method: 'POST',
+  path: '/api/v1/watchlist-remove',
   handler: function(request, reply) {
     return new WatchlistItem({ id: request.payload.id }).save({
       active: 0
