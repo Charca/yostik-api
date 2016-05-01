@@ -14,7 +14,8 @@ class AmazonTransformer extends BaseTransformer {
       throw 'There\'s no JSON to transform!';
     }
 
-    let items = this.json.ItemSearchResponse.Items.Item;
+    let items = this.json.ItemSearchResponse;
+    items = items && items.Items && items.Items.Item;
 
     if(items && items.length) {
       this.deals = [];
