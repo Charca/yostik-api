@@ -49,7 +49,7 @@ class Crawler {
 
   _exitProcess() {
     const timeElapsed = moment(this.crawlStart).fromNow(true);
-    process.stdout.write(clc.green(`DONE! IF YOU DON'T SEE A SEA OF RED, IT ALL WENT WELL. AND IT WAS ALL DONE IN: ${timeElapsed.toUpperCase()}`));
+    process.stdout.write(clc.green(`DONE! IF YOU DON'T SEE A SEA OF RED, IT ALL WENT WELL. AND IT WAS ALL DONE IN: ${timeElapsed.toUpperCase()}\n\n`));
     process.exit();
   }
 }
