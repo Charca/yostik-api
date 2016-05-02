@@ -97,6 +97,7 @@ server.route({
       qb.where('messenger_platform_id', '=', request.params.messenger_platform_id);
       qb.where('external_user_id', '=', request.params.external_user_id);
       qb.where('active', '=', '1');
+      qb.orderBy('updated_at', 'desc');
     })
     .fetchAll({withRelated: ['game', 'platform']})
     .then((items) => {
