@@ -90,6 +90,38 @@ server.route({
 });
 
 server.route({
+  method: 'GET',
+  path: '/api/v1/watchlist/{messenger_platform_id}/{external_user_id}',
+  handler: function(request, reply) {
+    return WatchlistItem.query((qb) => {
+      qb.where('messenger_platform_id', '=', request.params.messenger_platform_id);
+      qb.where('external_user_id', '=', request.params.external_user_id);
+      qb.where('active', '=', '1');
+    })
+    .fetchAll({withRelated: ['game', 'platform']})
+    .then((items) => {
+      const results = (items) ? items.toJSON() : [];
+      const response = {
+        count: results.length,
+        results
+      };
+      return reply(response);
+    })
+    .catch((err) => {
+      return reply(err);
+    })
+  },
+  config: {
+    validate: {
+      params: Joi.object({
+        messenger_platform_id: Joi.number().required(),
+        external_user_id: Joi.number().required()
+      })
+    }
+  }
+})
+
+server.route({
   method: 'POST',
   path: '/api/v1/watchlist',
   handler: function(request, reply) {

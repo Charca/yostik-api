@@ -6,9 +6,9 @@ module.exports = bookshelf.Model.extend({
   tableName: 'watchlist',
   hasTimestamps: true,
   game: function() {
-    return this.hasOne(Game);
+    return this.belongsTo(Game);
   },
   platform: function() {
-    return this.hasOne(Platform);
+    return this.belongsTo(Platform);
   }
 });
