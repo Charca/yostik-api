@@ -30,3 +30,4 @@ node_modules
 
 src/config/db.config.js
 src/config/amazon.config.js
+src/config/facebook.config.js
