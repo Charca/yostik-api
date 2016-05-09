@@ -1,5 +1,6 @@
 'use strict';
 
+const _ = require('lodash');
 const Hapi = require('hapi');
 const Joi = require('joi');
 const Game = require('./src/models/Game');
@@ -10,6 +11,10 @@ const User = require('./src/models/User');
 const WatchlistItem = require('./src/models/WatchlistItem');
 const facebookConfig = require('./src/config/facebook.config');
 const requestPromise = require('request-promise');
+const romanize = require('./src/utils/romanize');
+
+// Based on: http://www.gobloggingtips.com/wp-content/uploads/2014/08/Google-stopwords.txt
+const STOPWORDS = ['a', 'an', 'as', 'at', 'be', 'for', 'from', 'in', 'is', 'it', 'of', 'on', 'or', 'that', 'the', 'this', 'to', 'what'];
 
 const server = new Hapi.Server();
 server.connection({
@@ -21,12 +26,23 @@ server.route({
   method: 'GET',
   path: '/api/v1/search',
   handler: function(request, reply) {
-    const title = request.query.title;
     const platform = request.query.platform;
     const limit = request.query.limit;
+    const title = request.query.title;
+    const queryArray = title.replace(/[^a-z 0-9]/gi, '').trim().toLowerCase().split(' ');
+
+    if (!queryArray.length) {
+      return reply({error: 'Invalid query'});
+    }
 
     Deal.query((qb) => {
-      qb.where('title', 'LIKE', `%${title}%`);
+      queryArray.map((q) => {
+        if(isNaN(q)) {
+          return qb.where('title', 'LIKE', `%${q}%`);
+        }
+
+        qb.whereRaw(`(title LIKE '%${q}%' OR title LIKE '%${romanize.toRoman(q)}%')`);
+      });
       if (platform) {
         qb.where('platform_id', 'IN', platform);
       }
