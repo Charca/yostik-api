@@ -73,11 +73,20 @@ class PlayStationStoreTransformer extends BaseTransformer {
           // promos with different days, but all the info for the current deal
           // is in the 0 index object.
           discount = discounts[0];
-          deal['deal_price'] = discount.price / 100;
-          deal['discount_percent'] = discount.discount;
-          if(discount.bonus_discount && discount.bonus_price) {
-            deal['plus_price'] = discount.bonus_price / 100;
-            deal['plus_discount_percent'] = discount.bonus_discount;
+
+          if (discount.isPlus) {
+            // Plus Only Discount
+            deal['plus_price'] = discount.price / 100;
+            deal['plus_discount_percent'] = discount.discount;
+          } else {
+            // Normal Discount
+            deal['deal_price'] = discount.price / 100;
+            deal['discount_percent'] = discount.discount;
+            if(discount.bonus_discount && discount.bonus_price) {
+              // Plus Discount in addition to Normal Discount
+              deal['plus_price'] = discount.bonus_price / 100;
+              deal['plus_discount_percent'] = discount.bonus_discount;
+            }
           }
 
           deal['deal_start_date'] = moment(discount.start_date).format('YYYY-MM-DD hh:mm:ss') || null;
